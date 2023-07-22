@@ -38,7 +38,7 @@
 #define BUZZER_PIN 14
 #define BUZZER_CHANNEL 0
 #define BEEP_DURATION 5000 // 1 second (in milliseconds)
-
+#include <HTTPClient.h>
 
 const int PIN_LED = 2;
 
@@ -69,6 +69,7 @@ unsigned long last_button_time = 0;
 const float fallThreshold = 650000; // Adjust this value to suit your needs (in m/s^3)
 const int sampleInterval = 10;   // Interval in milliseconds between readings
 float prevAccX = 0.0, prevAccY = 0.0, prevAccZ = 0.0;
+String serverName = "https://api.callmebot.com/whatsapp.php?phone=919990358387&text=Fall+Detected&apikey=7578045";
 
 
 struct Button {
@@ -330,6 +331,9 @@ void setup()
 void loop()
 {
   drd->loop();
+  HTTPClient http;
+  String serverPath = serverName;
+  http.begin(serverPath.c_str());
   static unsigned long lastTime = 0;
 
   // Read accelerometer data
@@ -363,6 +367,20 @@ void loop()
       Serial.println("Fall detected!");
       ledcWriteTone(BUZZER_CHANNEL, 5000); // Play a 1kHz tone on the buzzer pin
       // Add your fall reaction code here (e.g., triggering an alarm, sending an alert, etc.)
+      int httpResponseCode = http.GET();
+      if (httpResponseCode>0) {
+        Serial.println("Alert message sent successfully!");
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+        String payload = http.getString();
+        Serial.println(payload);
+      }
+      else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+      }
+      // Free resources
+      http.end();
     }
     if (button1.pressed) {
       Serial.printf("Button has been pressed %u times\n", button1.numberKeyPresses);
