@@ -35,7 +35,7 @@
 
 #include <Wire.h>
 #include <MPU6050.h>
-#define BUZZER_PIN 12
+#define BUZZER_PIN 14
 #define BUZZER_CHANNEL 0
 #define BEEP_DURATION 5000 // 1 second (in milliseconds)
 
@@ -77,7 +77,7 @@ struct Button {
     bool pressed;
 };
 
-Button button1 = {15, 0, false};
+Button button1 = {12, 0, false};
 
 MPU6050 mpu;
 
@@ -188,7 +188,7 @@ void configModeCallback(WiFiManager *myWiFiManager)
 void setup()
 {
 
-  Wire.begin(22, 21); // SDA to GPIO 22, SCL to GPIO 21
+  Wire.begin(2, 15); // SDA to GPIO 22, SCL to GPIO 21
 
   // Initialize MPU6050
   mpu.initialize();
