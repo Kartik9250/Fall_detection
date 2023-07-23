@@ -285,6 +285,9 @@ void setup()
   const char *configInfoTextBottom = "<div style='margin-top: 20px;'>More configuration options can be added here...</div>";
 
   WiFiManager wm;
+  wm.setSaveConfigCallback(saveConfigCallback);
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  wm.setAPCallback(configModeCallback);
 
   // Add the text above the parameters
   WiFiManagerParameter config_info_top(configInfoText);
@@ -373,6 +376,7 @@ void setup()
   Serial.println(testString);
 
   //Convert the number value
+  testNumber = strtoull(custom_text_box_num.getValue(), nullptr, 10);
   sprintf(testNumberStr, "%llu", strtoull(custom_text_box_num.getValue(), nullptr, 10));
   Serial.print("testNumber: ");
   Serial.println(testNumberStr);
