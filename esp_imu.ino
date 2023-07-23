@@ -39,6 +39,7 @@
 #define BUZZER_CHANNEL 0
 #define BEEP_DURATION 5000 // 1 second (in milliseconds)
 #include <HTTPClient.h>
+#include "time.h"
 
 const int PIN_LED = 2;
 
@@ -61,7 +62,8 @@ DoubleResetDetector *drd;
 bool shouldSaveConfig = false;
 
 char testString[50] = "deafult value";
-int testNumber = 1500;
+unsigned long long testNumber = 12345678123ULL;
+int apikey = 1234567;
 bool testBool = true;
 
 unsigned long button_time = 0;  
@@ -69,7 +71,15 @@ unsigned long last_button_time = 0;
 const float fallThreshold = 650000; // Adjust this value to suit your needs (in m/s^3)
 const int sampleInterval = 10;   // Interval in milliseconds between readings
 float prevAccX = 0.0, prevAccY = 0.0, prevAccZ = 0.0;
-String serverName = "https://api.callmebot.com/whatsapp.php?phone=919990358387&text=Fall+Detected&apikey=7578045";
+String serverName = "https://api.callmebot.com/whatsapp.php?";
+const char* ntpServer = "in.pool.ntp.org";
+const long  gmtOffset_sec = 106200;
+const int   daylightOffset_sec = 0;
+char dateTimeStr[30];
+IPAddress staticIP(192, 168, 1, 100); // Replace with the desired static IP address
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress dns(8, 8, 8, 8); // Replace with your DNS server IP address
 
 
 struct Button {
@@ -81,6 +91,39 @@ struct Button {
 Button button1 = {12, 0, false};
 
 MPU6050 mpu;
+
+String urlEncode(const char* str) {
+  const char* hex = "0123456789ABCDEF";
+  String encodedStr = "";
+
+  while (*str != 0) {
+    if (('a' <= *str && *str <= 'z')
+        || ('A' <= *str && *str <= 'Z')
+        || ('0' <= *str && *str <= '9')) {
+      encodedStr += *str;
+    } else {
+      encodedStr += '%';
+      encodedStr += hex[*str >> 4];
+      encodedStr += hex[*str & 0xf];
+    }
+    str++;
+  }
+
+  return encodedStr;
+}
+
+void printLocalTime(){
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  
+  // Print only the current day and time
+  
+  strftime(dateTimeStr, sizeof(dateTimeStr), "%A, %B %d %Y %H:%M:%S", &timeinfo);
+}
+
 
 void IRAM_ATTR isr() {
     button_time = millis();
@@ -98,6 +141,7 @@ void saveConfigFile()
   StaticJsonDocument<512> json;
   json["testString"] = testString;
   json["testNumber"] = testNumber;
+  json["apikey"] = apikey;
   json["testBool"] = testBool;
 
   File configFile = SPIFFS.open(JSON_CONFIG_FILE, "w");
@@ -146,7 +190,8 @@ bool loadConfigFile()
           Serial.println("\nparsed json");
 
           strcpy(testString, json["testString"]);
-          testNumber = json["testNumber"].as<int>();
+          testNumber = json["testNumber"].as<unsigned long long>(); // Correctly read the testNumber
+          apikey = json["apikey"].as<int>(); // Correctly read the apikey
           testBool = json["testBool"].as<bool>();
 
           return true;
@@ -165,6 +210,7 @@ bool loadConfigFile()
   //end read
   return false;
 }
+
 
 //callback notifying us of the need to save config
 void saveConfigCallback()
@@ -236,13 +282,18 @@ void setup()
   //--- additional Configs params ---
 
   // Text box (String)
-  WiFiManagerParameter custom_text_box("key_text", "Enter your string here", testString, 50); // 50 == max length
+  WiFiManagerParameter custom_text_box("key_text", "Enter your Name", testString, 50); // 50 == max length
 
   // Text box (Number)
-  char convertedValue[6];
+  char convertedValue[12];
   sprintf(convertedValue, "%d", testNumber); // Need to convert to string to display a default value.
 
-  WiFiManagerParameter custom_text_box_num("key_num", "Enter your number here", convertedValue, 7); // 7 == max length
+  WiFiManagerParameter custom_text_box_num("key_num", "Enter Emergency Contact's number", convertedValue, 12); // 7 == max length
+
+  char convertedValueApi[7];
+  sprintf(convertedValueApi, "%d", apikey); // Need to convert to string to display a default value.
+
+  WiFiManagerParameter custom_text_box_api("key_api", "Enter Emergency contact's API key", convertedValueApi, 7); // 7 == max length
 
   //Check Box
   char *customHtml;
@@ -261,6 +312,7 @@ void setup()
   //add all your parameters here
   wm.addParameter(&custom_text_box);
   wm.addParameter(&custom_text_box_num);
+  wm.addParameter(&custom_text_box_api);
   wm.addParameter(&custom_checkbox);
 
   Serial.println("hello");
@@ -268,7 +320,7 @@ void setup()
   digitalWrite(PIN_LED, LOW);
   if (forceConfig)
   {
-    if (!wm.startConfigPortal("WifiTetris", "clock123"))
+    if (!wm.startConfigPortal("Fall_detector", "clock123"))
     {
       Serial.println("failed to connect and hit timeout");
       delay(3000);
@@ -279,7 +331,7 @@ void setup()
   }
   else
   {
-    if (!wm.autoConnect("WifiTetris", "clock123"))
+    if (!wm.autoConnect("Fall_detector", "clock123"))
     {
       Serial.println("failed to connect and hit timeout");
       delay(3000);
@@ -290,6 +342,10 @@ void setup()
   }
 
   // If we get here, we are connected to the WiFi
+  WiFi.config(staticIP, gateway, subnet, dns);
+
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
   digitalWrite(PIN_LED, HIGH);
 
   Serial.println("");
@@ -305,9 +361,13 @@ void setup()
   Serial.println(testString);
 
   //Convert the number value
-  testNumber = atoi(custom_text_box_num.getValue());
+  testNumber = strtoull(custom_text_box_num.getValue(), nullptr, 10);
   Serial.print("testNumber: ");
   Serial.println(testNumber);
+
+  apikey = atoi(custom_text_box_api.getValue());
+  Serial.print("apikey: ");
+  Serial.println(apikey);
 
   //Handle the bool value
   testBool = (strncmp(custom_checkbox.getValue(), "T", 1) == 0);
@@ -331,8 +391,16 @@ void setup()
 void loop()
 {
   drd->loop();
+  printLocalTime();
   HTTPClient http;
-  String serverPath = serverName;
+  char encodedDateTimeStr[50];
+  String encodedDateTime = urlEncode(dateTimeStr);
+  
+  char testNumberStr[20]; // Allocate a char array to hold the converted number as a string
+  sprintf(testNumberStr, "%llu", testNumber); // Convert the testNumber to a string
+
+  String serverPath = serverName + "phone=" + String(testNumberStr) + "&apikey=" + String(apikey) + "&text=A+Fall+has+been+detected+for+user:+" + testString + "+on+" + encodedDateTime;
+
   http.begin(serverPath.c_str());
   static unsigned long lastTime = 0;
 
@@ -360,7 +428,7 @@ void loop()
 
     // Calculate the magnitude of jerk
     float jerkMagnitude = sqrt(jerkX * jerkX + jerkY * jerkY + jerkZ * jerkZ);
-    Serial.println(jerkMagnitude);
+    //Serial.println(jerkMagnitude);
     // Check for a fall
     if (jerkMagnitude > fallThreshold) {
       // Fall detected
