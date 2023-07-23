@@ -63,6 +63,7 @@ bool shouldSaveConfig = false;
 
 char testString[50] = "deafult value";
 unsigned long long testNumber = 12345678123ULL;
+char testNumberStr[20]; // Allocate a char array to hold the converted number as a string
 int apikey = 1234567;
 bool testBool = true;
 
@@ -278,31 +279,32 @@ void setup()
 
   // wm.resetSettings(); // wipe settings
 
+  const char *configInfoText = "<div style='margin-bottom: 20px;'>Ask your emergency contact to open scan this QR <a href='https://i.ibb.co/rMzYN3z/callmebot-qr.png'>here</a> and provide their API key.</div>";
+
+  // Text to be displayed below the parameters
+  const char *configInfoTextBottom = "<div style='margin-top: 20px;'>More configuration options can be added here...</div>";
+
   WiFiManager wm;
 
-  //wm.resetSettings(); // wipe settings
-  //set config save notify callback
-  wm.setSaveConfigCallback(saveConfigCallback);
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  wm.setAPCallback(configModeCallback);
+  // Add the text above the parameters
+  WiFiManagerParameter config_info_top(configInfoText);
+  wm.addParameter(&config_info_top);
 
-  //--- additional Configs params ---
+  // --- additional Configs params ---
 
   // Text box (String)
   WiFiManagerParameter custom_text_box("key_text", "Enter your Name", testString, 50); // 50 == max length
 
   // Text box (Number)
-  char convertedValue[12];
-  sprintf(convertedValue, "%d", testNumber); // Need to convert to string to display a default value.
+  sprintf(testNumberStr, "%llu", testNumber); // Convert the testNumber to a string
+  WiFiManagerParameter custom_text_box_num("key_num", "Enter Emergency Contact's number", testNumberStr, 12); // 12 == max length
 
-  WiFiManagerParameter custom_text_box_num("key_num", "Enter Emergency Contact's number", convertedValue, 12); // 7 == max length
-
+  // Text box (API Key)
   char convertedValueApi[7];
-  sprintf(convertedValueApi, "%d", apikey); // Need to convert to string to display a default value.
-
+  sprintf(convertedValueApi, "%d", apikey); // Need to convert to a string to display a default value.
   WiFiManagerParameter custom_text_box_api("key_api", "Enter Emergency contact's API key", convertedValueApi, 7); // 7 == max length
 
-  //Check Box
+  // Check Box
   char *customHtml;
   if (testBool)
   {
@@ -316,12 +318,15 @@ void setup()
   // box is checked the value for this field will
   // be "t", so we can check for that.
 
-  //add all your parameters here
+  // Add all your parameters here
   wm.addParameter(&custom_text_box);
   wm.addParameter(&custom_text_box_num);
   wm.addParameter(&custom_text_box_api);
   wm.addParameter(&custom_checkbox);
 
+  // Add the text below the parameters
+  WiFiManagerParameter config_info_bottom(configInfoTextBottom);
+  wm.addParameter(&config_info_bottom);
   Serial.println("hello");
 
   digitalWrite(PIN_LED, LOW);
@@ -368,9 +373,9 @@ void setup()
   Serial.println(testString);
 
   //Convert the number value
-  testNumber = strtoull(custom_text_box_num.getValue(), nullptr, 10);
+  sprintf(testNumberStr, "%llu", strtoull(custom_text_box_num.getValue(), nullptr, 10));
   Serial.print("testNumber: ");
-  Serial.println(testNumber);
+  Serial.println(testNumberStr);
 
   apikey = atoi(custom_text_box_api.getValue());
   Serial.print("apikey: ");
