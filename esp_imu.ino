@@ -65,7 +65,6 @@ char testString[50] = "deafult value";
 unsigned long long testNumber = 12345678123ULL;
 char testNumberStr[20]; // Allocate a char array to hold the converted number as a string
 int apikey = 1234567;
-bool testBool = true;
 
 unsigned long button_time = 0;  
 unsigned long last_button_time = 0;
@@ -148,7 +147,6 @@ void saveConfigFile()
   json["testString"] = testString;
   json["testNumber"] = testNumber;
   json["apikey"] = apikey;
-  json["testBool"] = testBool;
 
   File configFile = SPIFFS.open(JSON_CONFIG_FILE, "w");
   if (!configFile)
@@ -198,7 +196,6 @@ bool loadConfigFile()
           strcpy(testString, json["testString"]);
           testNumber = json["testNumber"].as<unsigned long long>(); // Correctly read the testNumber
           apikey = json["apikey"].as<int>(); // Correctly read the apikey
-          testBool = json["testBool"].as<bool>();
 
           return true;
         }
@@ -307,25 +304,11 @@ void setup()
   sprintf(convertedValueApi, "%d", apikey); // Need to convert to a string to display a default value.
   WiFiManagerParameter custom_text_box_api("key_api", "Enter Emergency contact's API key", convertedValueApi, 7); // 7 == max length
 
-  // Check Box
-  char *customHtml;
-  if (testBool)
-  {
-    customHtml = "type=\"checkbox\" checked";
-  }
-  else
-  {
-    customHtml = "type=\"checkbox\"";
-  }
-  WiFiManagerParameter custom_checkbox("key_bool", "Checkbox", "T", 2, customHtml); // The "t" isn't really important, but if the
-  // box is checked the value for this field will
-  // be "t", so we can check for that.
 
   // Add all your parameters here
   wm.addParameter(&custom_text_box);
   wm.addParameter(&custom_text_box_num);
   wm.addParameter(&custom_text_box_api);
-  wm.addParameter(&custom_checkbox);
 
   // Add the text below the parameters
   WiFiManagerParameter config_info_bottom(configInfoTextBottom);
@@ -384,18 +367,6 @@ void setup()
   apikey = atoi(custom_text_box_api.getValue());
   Serial.print("apikey: ");
   Serial.println(apikey);
-
-  //Handle the bool value
-  testBool = (strncmp(custom_checkbox.getValue(), "T", 1) == 0);
-  Serial.print("testBool: ");
-  if (testBool)
-  {
-    Serial.println("true");
-  }
-  else
-  {
-    Serial.println("false");
-  }
 
   //save the custom parameters to FS
   if (shouldSaveConfig)
