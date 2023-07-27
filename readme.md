@@ -19,8 +19,9 @@ The ESP32 Fall Detection Device is a wearable device designed to detect falls us
 
 
 ## Hardware Components Used:
-
-<center><img src="https://i.ibb.co/1vSSR8p/Whats-App-Image-2023-07-25-at-12-28-09-PM.jpg" height="500" width="500"></center>
+<p align="center">
+<img src="https://i.ibb.co/1vSSR8p/Whats-App-Image-2023-07-25-at-12-28-09-PM.jpg" height="500" width="500">
+</p>
 <br>
 
 - **ESP32 Development Board:** The ESP32 development board serves as the main microcontroller for the fall detection device. It provides processing power, built-in WiFi and Bluetooth capabilities, and multiple GPIO pins for interfacing with other components.
@@ -39,7 +40,9 @@ The hardware components work together to enable the ESP32 Fall Detection Device 
 
 
 ## How it Works
-<center><img src="https://i.ibb.co/q1C2q6c/Whats-App-Image-2023-07-25-at-1-08-28-PM.jpg" height="700" width="450"></center>
+<p align="center">
+<img src="https://i.ibb.co/q1C2q6c/Whats-App-Image-2023-07-25-at-1-08-28-PM.jpg" height="700" width="450">
+</p>
 <br>
 
 1. **Fall Detection:** The MPU6050 sensor measures the user's accelerations and jerk in real-time. If the jerk exceeds a certain threshold, it indicates a fall event.
