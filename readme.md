@@ -20,6 +20,9 @@ The ESP32 Fall Detection Device is a wearable device designed to detect falls us
 
 ## Hardware Components Used:
 
+<center><img src="https://i.ibb.co/1vSSR8p/Whats-App-Image-2023-07-25-at-12-28-09-PM.jpg" height="500" width="500"></center>
+<br>
+
 - **ESP32 Development Board:** The ESP32 development board serves as the main microcontroller for the fall detection device. It provides processing power, built-in WiFi and Bluetooth capabilities, and multiple GPIO pins for interfacing with other components.
 
 - **MPU6050 Accelerometer and Gyroscope Sensor:** The MPU6050 sensor is a crucial component for detecting falls. It combines an accelerometer and a gyroscope to measure the device's motion, allowing the detection of sudden changes in acceleration that could indicate a fall event.
@@ -27,8 +30,6 @@ The ESP32 Fall Detection Device is a wearable device designed to detect falls us
 - **Piezo Buzzer:** An Piezo buzzer is used to generate an audible alert in case of a fall detection. It produces a continuous sound to attract the attention of people nearby.
 
 - **Event Cancellation Button:** The event cancellation button is a momentary push-button that allows the user to manually stop the buzzer in the event of a false alarm or after a fall detection.
-
-- (to do)**Battery and Power Supply Circuit:** The fall detection device requires a stable power supply, typically provided by a rechargeable battery. A power supply circuit is necessary to regulate the voltage and ensure the proper functioning of the device.
 
 - **ESP32 WiFi Connectivity:** The ESP32 Fall Detection Device is equipped with built-in WiFi capabilities. It uses this WiFi connectivity to communicate with the Twilio cloud services and send SMS alerts. With the Twilio integration, the fall detection device can benefit from a robust cloud communication platform to ensure reliable and efficient SMS delivery to the emergency contacts in case of a fall.
 
@@ -38,6 +39,8 @@ The hardware components work together to enable the ESP32 Fall Detection Device 
 
 
 ## How it Works
+<center><img src="https://i.ibb.co/q1C2q6c/Whats-App-Image-2023-07-25-at-1-08-28-PM.jpg" height="700" width="450"></center>
+<br>
 
 1. **Fall Detection:** The MPU6050 sensor measures the user's accelerations and jerk in real-time. If the jerk exceeds a certain threshold, it indicates a fall event.
 
