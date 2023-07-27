@@ -57,7 +57,7 @@ The hardware components work together to enable the ESP32 Fall Detection Device 
 
 To use the ESP32 Fall Detection Device, follow these steps:
 
-1. Assemble the hardware components according to the schematic diagram provided. (to be added)
+1. Assemble the hardware components according to the schematic diagram provided.
 
 2. Upload the provided firmware to the ESP32 using the Arduino IDE or your preferred programming environment.
 
